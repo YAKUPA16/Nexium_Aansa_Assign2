@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabaseClient";
+import { saveToMongo } from "@/lib/saveToMongo";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -117,7 +118,14 @@ export default function Home() {
                   alert("❌ Failed to save summary.");
                 } else {
                   console.log("✅ Supabase insert success:", data);
-                  alert("✅ Summary saved to Supabase!");
+
+                  // 💾 Save full blog to MongoDB too
+                  const mongoSuccess = await saveToMongo(url, fakeBlogText);
+                  if (mongoSuccess) {
+                    alert("✅ Summary saved to Supabase & blog saved to MongoDB!");
+                  } else {
+                    alert("✅ Summary saved, but MongoDB failed.");
+                  }
                 }
               }}
             >
