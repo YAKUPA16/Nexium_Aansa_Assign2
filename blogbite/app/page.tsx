@@ -1,33 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Home() {
   const [url, setUrl] = useState("");
   const [summary, setSummary] = useState("");
   const [urduSummary, setUrduSummary] = useState("");
+  const [hydrated, setHydrated] = useState(false);
+
   const fakeBlogText = `Cookies are one of the most loved snacks worldwide. 
                         They come in many flavors, but chocolate chip cookies remain the most popular. 
                         People enjoy them with milk, coffee, or as standalone treats.`;
 
-// Simple static logic: return first sentence
-function simulateSummary(text: string) {
-  const firstSentence = text.split(".")[0] + ".";
-  return firstSentence;
-}
+  // Static summary logic
+  function simulateSummary(text: string) {
+    const firstSentence = text.split(".")[0] + ".";
+    return firstSentence;
+  }
 
-function translateToUrdu(summary: string): string {
-  return summary
-    .split(" ")
-    .map((word) => {
-      const cleaned = word.toLowerCase().replace(/[.,]/g, "");
-      return urduDictionary[cleaned] || word;
-    })
-    .join(" ");
-}
+  // Simple dictionary-based translation
+  function translateToUrdu(summary: string): string {
+    return summary
+      .split(" ")
+      .map((word) => {
+        const cleaned = word.toLowerCase().replace(/[.,]/g, "");
+        return urduDictionary[cleaned] || word;
+      })
+      .join(" ");
+  }
+
+  useEffect(() => {
+    setHydrated(true);
+  }, []);
 
   return (
     <main className="bg-[url('/Cookies.jpg')] bg-repeat bg-center min-h-screen flex items-center justify-center px-4">
@@ -66,7 +74,7 @@ function translateToUrdu(summary: string): string {
         </div>
 
         {/* 📄 Summary Output */}
-        {summary && (
+        {hydrated && summary && (
           <div className="space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-left text-[#d1882e]">Summary (English)</h2>
@@ -89,9 +97,30 @@ function translateToUrdu(summary: string): string {
         )}
 
         {/* 💾 Save Section */}
-        {summary && (
+        {hydrated && summary && (
           <div className="text-center">
-            <Button className="bg-[#d1882e] hover:bg-[#bd7726] text-white w-full">
+            <Button
+              className="bg-[#d1882e] hover:bg-[#bd7726] text-white w-full"
+              onClick={async () => {
+                console.log("🟡 Attempting to insert:", {
+                  url,
+                  summary,
+                  urdu_summary: urduSummary,
+                });
+
+                const { data, error } = await supabase
+                  .from("summaries")
+                  .insert([{ url, summary, urdu_summary: urduSummary }]);
+
+                if (error) {
+                  console.error("❌ Supabase insert error:", error);
+                  alert("❌ Failed to save summary.");
+                } else {
+                  console.log("✅ Supabase insert success:", data);
+                  alert("✅ Summary saved to Supabase!");
+                }
+              }}
+            >
               Save Summary
             </Button>
             <p className="text-green-600 text-sm mt-2">✔️ Saved successfully!</p>
@@ -127,4 +156,3 @@ const urduDictionary: Record<string, string> = {
   "standalone": "اکیلا",
   "treats": "چیزیں"
 };
-
