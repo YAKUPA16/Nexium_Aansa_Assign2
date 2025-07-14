@@ -103,29 +103,44 @@ export default function Home() {
             <Button
               className="bg-[#d1882e] hover:bg-[#bd7726] text-white w-full"
               onClick={async () => {
-                console.log("🟡 Attempting to insert:", {
-                  url,
-                  summary,
-                  urdu_summary: urduSummary,
-                });
+                console.log("🟡 Saving summary...");
+                // Save to MongoDB via API route
+                let mongoSuccess = false;
+                try {
+                  const mongoRes = await fetch("/api/save-to-mongo", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      url,
+                      fullText: fakeBlogText,
+                    }),
+                  });
 
+                  const mongoResult = await mongoRes.json();
+                  mongoSuccess = mongoResult.success;
+
+                  if (mongoSuccess) {
+                    console.log("✅ MongoDB save success:", mongoResult);
+                  } else {
+                    console.error("❌ MongoDB save failed:", mongoResult.error);
+                  }
+                } catch (err) {
+                  console.error("❌ Mongo fetch error:", err);
+                }
+
+                // Save to Supabase
                 const { data, error } = await supabase
                   .from("summaries")
                   .insert([{ url, summary, urdu_summary: urduSummary }]);
 
                 if (error) {
-                  console.error("❌ Supabase insert error:", error);
-                  alert("❌ Failed to save summary.");
+                  console.error("❌ Supabase insert error:", JSON.stringify(error, null, 2));
+                  alert(`❌ Supabase failed.${mongoSuccess ? " But MongoDB saved it." : ""}`);
                 } else {
                   console.log("✅ Supabase insert success:", data);
-
-                  // 💾 Save full blog to MongoDB too
-                  const mongoSuccess = await saveToMongo(url, fakeBlogText);
-                  if (mongoSuccess) {
-                    alert("✅ Summary saved to Supabase & blog saved to MongoDB!");
-                  } else {
-                    alert("✅ Summary saved, but MongoDB failed.");
-                  }
+                  alert(
+                    `✅ Summary saved to Supabase${mongoSuccess ? " and MongoDB!" : " (but Mongo failed)"}`
+                  );
                 }
               }}
             >
