@@ -15,8 +15,15 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, insertedId: result.insertedId });
-  } catch (error) {
-    console.error("Mongo API Error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    console.error("❌ Mongo API Error:", error);
+    const message =
+      error instanceof Error
+        ? error.message
+        : typeof error === "string"
+        ? error
+        : "Unknown server error";
+
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }
