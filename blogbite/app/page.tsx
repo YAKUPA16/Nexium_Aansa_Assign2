@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/lib/supabaseClient";
-import { saveToMongo } from "@/lib/saveToMongo";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -64,6 +63,7 @@ export default function Home() {
             id="summarizeBtn"
             className="bg-[#68cef7] text-white hover:bg-[#52b3e6] w-full"
             onClick={() => {
+              console.log("📥 URL entered:", url); // ✅ Log the input
               const summaryResult = simulateSummary(fakeBlogText);
               const urdu = translateToUrdu(summaryResult);
               setSummary(summaryResult);
@@ -130,7 +130,7 @@ export default function Home() {
 
                 // Save to Supabase
                 const { data, error } = await supabase
-                  .from("summaries")
+                  .from("Summaries")
                   .insert([{ url, summary, urdu_summary: urduSummary }]);
 
                 if (error) {
