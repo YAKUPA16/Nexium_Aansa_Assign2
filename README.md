@@ -21,6 +21,9 @@ Welcome to **BlogBite** — a sweet little app that lets you snack on long blogs
 - **Backend**: Supabase, MongoDB Atlas
 - **Deployment**: Vercel
 
+## 🧪 Try It Live
+
+🔗 [Click here to view the deployed app](https://nexium-aansa-assign2.vercel.app)
 
 ## 📦 Installation
 
