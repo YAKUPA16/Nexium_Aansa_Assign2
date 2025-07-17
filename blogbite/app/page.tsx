@@ -146,7 +146,6 @@ export default function Home() {
             >
               Save Summary
             </Button>
-            <p className="text-green-600 text-sm mt-2">✔️ Saved successfully!</p>
           </div>
         )}
       </div>
